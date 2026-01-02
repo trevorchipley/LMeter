@@ -468,16 +468,26 @@ namespace LMeter.Meter
                 float top = sortedCombatants[0].GetValueForDataType(this.GeneralConfig.DataType);
                 int barCount = this.BarConfig.BarCount;
                 float margin = 0;
+
                 if (this.BarConfig.BarSizeType == BarSizeType.ConstantSize)
                 {
-                    float total = 0;
-                    barCount = 0;
-                    do
+                    var barWidth = Math.Min(this.BarConfig.BarWidth, size.X);
+                    var maxColumnCount = Math.Min(this.BarConfig.MaxColumns, (int)Math.Floor(size.X / barWidth));
+
+                    if (this.BarConfig.MaxColumns > 1)
                     {
-                        barCount++;
-                        total += this.BarConfig.BarHeight + this.BarConfig.BarVerticalGaps;
-                    } while (total <= size.Y);
-                    margin = total - size.Y - this.BarConfig.BarVerticalGaps;
+                        barWidth += this.BarConfig.BarHorizontalGaps;
+                    }
+
+                    var barHeight = this.BarConfig.BarHeight + this.BarConfig.BarVerticalGaps;
+                    var maxRowCount = this.BarConfig.MaxRows > 0
+                        ? Math.Min(this.BarConfig.MaxRows, (int)Math.Ceiling(size.Y / barHeight))
+                        : (int)Math.Ceiling(size.Y / barHeight);
+
+                    float totalY = maxRowCount * barHeight;
+                    margin = totalY - size.Y - this.BarConfig.BarVerticalGaps;
+
+                    barCount = maxColumnCount * maxRowCount;
                 }
 
                 int currentIndex = 0;
