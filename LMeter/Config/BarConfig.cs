@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 using System.Text.Json.Serialization;
 using Dalamud.Bindings.ImGui;
@@ -15,8 +16,17 @@ namespace LMeter.Config
 
         public BarSizeType BarSizeType = BarSizeType.ConstantCount;
         public int BarCount = 8;
-        public int BarGaps = 1;
+        [Obsolete($"Use {nameof(BarVerticalGaps)} instead, retained for serialization backwards compatibility")] public int BarGaps
+        {
+            get => BarHorizontalGaps;
+            set => BarHorizontalGaps = value;
+        }
+        public int BarVerticalGaps = 1;
+        public int BarHorizontalGaps = 1;
         public float BarHeight = 25;
+        public float BarWidth = 1;
+        public int MaxRows = 0;
+        public int MaxColumns = 1;
 
         public bool ShowJobIcon = true;
         public int JobIconSizeType = 0;
@@ -116,9 +126,22 @@ namespace LMeter.Config
                 else if (this.BarSizeType == BarSizeType.ConstantSize)
                 {
                     ImGui.DragFloat("Bar Height", ref this.BarHeight, .1f, 1, 100);
+                    ImGui.DragFloat("Bar Width", ref this.BarWidth, .1f, 1, 100);
                 }
 
-                ImGui.DragInt("Bar Gap Size", ref this.BarGaps, 1, 0, 20);
+                ImGui.DragInt("Maximum Columns", ref this.MaxColumns, 1, 0, 40);
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.SetTooltip("Set to 0 for unlimited");
+                }
+                ImGui.DragInt("Maximum Rows", ref this.MaxRows, 1, 0, 40);
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.SetTooltip("Set to 0 for unlimited");
+                }
+
+                ImGui.DragInt("Bar Vertical Gap Size", ref this.BarVerticalGaps, 1, 0, 20);
+                ImGui.DragInt("Bar Horizontal Gap Size", ref this.BarHorizontalGaps, 1, 0, 20);
 
                 ImGui.NewLine();
                 ImGui.DragFloat("Bar Fill Height (% of Bar Height)", ref this.BarFillHeight, .1f, 0, 1f);

@@ -475,9 +475,9 @@ namespace LMeter.Meter
                     do
                     {
                         barCount++;
-                        total += this.BarConfig.BarHeight + this.BarConfig.BarGaps;
+                        total += this.BarConfig.BarHeight + this.BarConfig.BarVerticalGaps;
                     } while (total <= size.Y);
-                    margin = total - size.Y - this.BarConfig.BarGaps;
+                    margin = total - size.Y - this.BarConfig.BarVerticalGaps;
                 }
 
                 int currentIndex = 0;
@@ -568,7 +568,7 @@ namespace LMeter.Meter
             BarConfig barConfig = this.BarConfig;
             float barHeight =
                 barConfig.BarSizeType == BarSizeType.ConstantCount
-                    ? (size.Y - (barConfig.BarCount - 1) * barConfig.BarGaps) / barConfig.BarCount
+                    ? (size.Y - (barConfig.BarCount - 1) * barConfig.BarVerticalGaps) / barConfig.BarCount
                     : barConfig.BarHeight;
 
             Vector2 barPos = localPos;
@@ -610,7 +610,7 @@ namespace LMeter.Meter
             }
 
             DrawBarTexts(drawList, this.BarTextConfig.Texts, localPos, barSize, jobColor, combatant);
-            return localPos.AddY(barHeight + barConfig.BarGaps);
+            return localPos.AddY(barHeight + barConfig.BarVerticalGaps);
         }
 
         private static void DrawBarTexts<T>(
