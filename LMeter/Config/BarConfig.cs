@@ -127,14 +127,10 @@ namespace LMeter.Config
                 {
                     // TODO can we do stretch along one dimension instead? i.e. contant height, fit width
                     ImGui.DragFloat("Bar Height", ref this.BarHeight, .1f, 1, 100);
-                    ImGui.DragFloat("Bar Width", ref this.BarWidth, .1f, 1, 100);
+                    ImGui.DragFloat("Bar Width", ref this.BarWidth, .1f, 1, 1000);
                 }
 
-                ImGui.DragInt("Maximum Columns", ref this.MaxColumns, 1, 0, 40);
-                if (ImGui.IsItemHovered())
-                {
-                    ImGui.SetTooltip("Set to 0 for unlimited");
-                }
+                ImGui.DragInt("Maximum Columns", ref this.MaxColumns, 1, 1, 40);
                 ImGui.DragInt("Maximum Rows", ref this.MaxRows, 1, 0, 40);
                 if (ImGui.IsItemHovered())
                 {
