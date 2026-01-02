@@ -468,7 +468,7 @@ namespace LMeter.Meter
                 float top = sortedCombatants[0].GetValueForDataType(this.GeneralConfig.DataType);
                 int barCount = this.BarConfig.BarCount;
                 float margin = 0;
-                if (this.BarConfig.BarHeightType == 1)
+                if (this.BarConfig.BarSizeType == BarSizeType.ConstantSize)
                 {
                     float total = 0;
                     barCount = 0;
@@ -498,7 +498,7 @@ namespace LMeter.Meter
                         _scrollShift = 0;
                     }
 
-                    if (this.BarConfig.AlwaysShowSelf && this.BarConfig.BarHeightType == 0)
+                    if (this.BarConfig.AlwaysShowSelf && this.BarConfig.BarSizeType == BarSizeType.ConstantCount)
                     {
                         MovePlayerIntoViewableRange(sortedCombatants, _scrollPosition, playerName);
                     }
@@ -567,7 +567,7 @@ namespace LMeter.Meter
         {
             BarConfig barConfig = this.BarConfig;
             float barHeight =
-                barConfig.BarHeightType == 0
+                barConfig.BarSizeType == BarSizeType.ConstantCount
                     ? (size.Y - (barConfig.BarCount - 1) * barConfig.BarGaps) / barConfig.BarCount
                     : barConfig.BarHeight;
 

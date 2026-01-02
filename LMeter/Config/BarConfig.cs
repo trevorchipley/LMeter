@@ -13,7 +13,7 @@ namespace LMeter.Config
 
         private static readonly string[] _jobIconStyleOptions = ["Style 1", "Style 2"];
 
-        public int BarHeightType = 0;
+        public BarSizeType BarSizeType = BarSizeType.ConstantCount;
         public int BarCount = 8;
         public int BarGaps = 1;
         public float BarHeight = 25;
@@ -104,16 +104,16 @@ namespace LMeter.Config
         {
             if (ImGui.BeginChild($"##{this.Name}", new Vector2(size.X, size.Y), border))
             {
-                ImGui.Text("Bar Height Type");
-                ImGui.RadioButton("Constant Bar Number", ref this.BarHeightType, 0);
+                ImGui.Text("Bar Size Type");
+                ImGui.RadioButton("Constant Bar Number", ref this.BarSizeType, BarSizeType.ConstantCount);
                 ImGui.SameLine();
-                ImGui.RadioButton("Constant Bar Height", ref this.BarHeightType, 1);
+                ImGui.RadioButton("Constant Bar Size", ref this.BarSizeType, BarSizeType.ConstantSize);
 
-                if (this.BarHeightType == 0)
+                if (this.BarSizeType == BarSizeType.ConstantCount)
                 {
                     ImGui.DragInt("Num Bars to Display", ref this.BarCount, 1, 1, 48);
                 }
-                else if (this.BarHeightType == 1)
+                else if (this.BarSizeType == BarSizeType.ConstantSize)
                 {
                     ImGui.DragFloat("Bar Height", ref this.BarHeight, .1f, 1, 100);
                 }
@@ -208,7 +208,7 @@ namespace LMeter.Config
                 }
 
                 ImGui.Checkbox("Use your name instead of 'YOU'", ref this.UseCharacterName);
-                if (this.BarHeightType == 0)
+                if (this.BarSizeType == BarSizeType.ConstantCount)
                 {
                     ImGui.Checkbox("Always show your own bar", ref this.AlwaysShowSelf);
                 }
