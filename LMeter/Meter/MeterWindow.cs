@@ -658,23 +658,12 @@ namespace LMeter.Meter
 
             DrawBarTexts(drawList, this.BarTextConfig.Texts, localPos, barSize, jobColor, combatant);
 
-            if (!logged) Singletons.Get<IPluginLog>().Info($"Current X = {localPos.X}");
-            if (!logged) Singletons.Get<IPluginLog>().Info($"Current Y = {localPos.Y}");
-            
             var nextPos = localPos.AddX(barSize.X + barConfig.BarHorizontalGaps);
            
-            if (!logged) Singletons.Get<IPluginLog>().Info($"Tentative Next X = {nextPos.X}");
-            if (!logged) Singletons.Get<IPluginLog>().Info($"Tentative Next Y = {nextPos.Y}");
-            
-            if (!logged) Singletons.Get<IPluginLog>().Info($"Calculated Right Edge = {Math.Floor(nextPos.X + barSize.X)}");
-            if (!logged) Singletons.Get<IPluginLog>().Info($"Calculated Max Right Edge = {baseX + size.X}");
-
             // TODO doesn't respect column count with fixed size bars - probably change this to do math based on current row/column rather than adjusting positioning (we did all the math to size things well already)
             if (Math.Floor(nextPos.X + barSize.X) > baseX + size.X)
             {
                 nextPos = localPos.AddY(barSize.Y + barConfig.BarVerticalGaps).WithX(baseX);
-                if (!logged) Singletons.Get<IPluginLog>().Info($"Adjusted Next X = {nextPos.X}");
-                if (!logged) Singletons.Get<IPluginLog>().Info($"Adjusted Next Y = {nextPos.Y}");
             }
             
             return nextPos;
