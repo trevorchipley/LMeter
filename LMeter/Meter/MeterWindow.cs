@@ -550,64 +550,69 @@ namespace LMeter.Meter
                     }
                 }
 
-                var baseX = localPos.X;
                 localPos = localPos.AddY(-_scrollShift);
                 int maxIndex = Math.Min(currentIndex + barCount, sortedCombatants.Count);
                 int startIndex = currentIndex;
-                for (; currentIndex < maxIndex; currentIndex++)
+
+                for (int currentRow = 0; currentRow < rowCount && currentIndex < maxIndex; ++currentRow)
                 {
-                    Combatant combatant = sortedCombatants[currentIndex];
-                    float current = combatant.GetValueForDataType(this.GeneralConfig.DataType);
-                    ConfigColor barColor = this.BarConfig.BarColor;
-                    ConfigColor jobColor = this.BarColorsConfig.GetColor(combatant.Job);
+                    for (int currentColumn = 0; currentColumn < columnCount && currentIndex < maxIndex; ++currentColumn, ++currentIndex)
+                    {
+                        Combatant combatant = sortedCombatants[currentIndex];
+                        float current = combatant.GetValueForDataType(this.GeneralConfig.DataType);
+                        ConfigColor barColor = this.BarConfig.BarColor;
+                        ConfigColor jobColor = this.BarColorsConfig.GetColor(combatant.Job);
 
-                    if (this.BarConfig.UseCustomColorForSelf && combatant.OriginalName.Equals("YOU"))
-                    {
-                        barColor = this.BarConfig.CustomColorForSelf;
-                        jobColor = this.BarConfig.CustomColorForSelf;
-                    }
+                        if (this.BarConfig.UseCustomColorForSelf && combatant.OriginalName.Equals("YOU"))
+                        {
+                            barColor = this.BarConfig.CustomColorForSelf;
+                            jobColor = this.BarConfig.CustomColorForSelf;
+                        }
 
-                    combatant.NameOverwrite = this.BarConfig.UseCharacterName switch
-                    {
-                        true when combatant.Name.Contains("YOU") => combatant.Name.Replace("YOU", playerName),
-                        false when combatant.NameOverwrite is not null => null,
-                        _ => combatant.NameOverwrite,
-                    };
+                        combatant.NameOverwrite = this.BarConfig.UseCharacterName switch
+                        {
+                            true when combatant.Name.Contains("YOU") => combatant.Name.Replace("YOU", playerName),
+                            false when combatant.NameOverwrite is not null => null,
+                            _ => combatant.NameOverwrite,
+                        };
 
-                    RoundingOptions rounding = this.BarConfig.MiddleBarRounding;
-                    if (currentIndex == startIndex)
-                    {
-                        rounding = this.BarConfig.TopBarRounding;
+                        // TODO evaluate this rounding - should it be row == 0? Something else?
+                        RoundingOptions rounding = this.BarConfig.MiddleBarRounding;
+                        if (currentRow == startIndex)
+                        {
+                            rounding = this.BarConfig.TopBarRounding;
+                        }
+                        else if (currentIndex == maxIndex - 1)
+                        {
+                            rounding = this.BarConfig.BottomBarRounding;
+                        }
+
+                        var barPos = new Vector2(
+                            localPos.X + currentColumn * (barSize.X + this.BarConfig.BarHorizontalGaps),
+                            localPos.Y + currentRow * (barSize.Y + this.BarConfig.BarVerticalGaps)
+                        );
+                        
+                        this.DrawBar(
+                            drawList,
+                            barPos,
+                            barSize,
+                            combatant,
+                            jobColor,
+                            barColor,
+                            top,
+                            current,
+                            rounding
+                        );
                     }
-                    else if (currentIndex == maxIndex - 1)
-                    {
-                        rounding = this.BarConfig.BottomBarRounding;
-                    }
-                    
-                    localPos = this.DrawBar(
-                        drawList,
-                        baseX,
-                        localPos,
-                        size,
-                        barSize,
-                        combatant,
-                        jobColor,
-                        barColor,
-                        top,
-                        current,
-                        rounding
-                    );
                 }
 
                 logged = true;
             }
         }
 
-        private Vector2 DrawBar(
+        private void DrawBar(
             ImDrawListPtr drawList,
-            float baseX,
             Vector2 localPos,
-            Vector2 size,
             Vector2 barSize,
             Combatant combatant,
             ConfigColor jobColor,
@@ -657,16 +662,6 @@ namespace LMeter.Meter
             }
 
             DrawBarTexts(drawList, this.BarTextConfig.Texts, localPos, barSize, jobColor, combatant);
-
-            var nextPos = localPos.AddX(barSize.X + barConfig.BarHorizontalGaps);
-           
-            // TODO doesn't respect column count with fixed size bars - probably change this to do math based on current row/column rather than adjusting positioning (we did all the math to size things well already)
-            if (Math.Floor(nextPos.X + barSize.X) > baseX + size.X)
-            {
-                nextPos = localPos.AddY(barSize.Y + barConfig.BarVerticalGaps).WithX(baseX);
-            }
-            
-            return nextPos;
         }
 
         private static void DrawBarTexts<T>(
