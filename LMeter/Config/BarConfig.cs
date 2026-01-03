@@ -16,11 +16,14 @@ namespace LMeter.Config
 
         public BarSizeType BarSizeType = BarSizeType.ConstantCount;
         public int BarCount = 8;
-        [Obsolete($"Use {nameof(BarVerticalGaps)} instead, retained for serialization backwards compatibility")] public int BarGaps
+
+        [Obsolete($"Use {nameof(BarVerticalGaps)} instead, retained for serialization backwards compatibility")]
+        public int BarGaps
         {
             get => BarHorizontalGaps;
             set => BarHorizontalGaps = value;
         }
+
         public int BarVerticalGaps = 1;
         public int BarHorizontalGaps = 1;
         public float BarHeight = 25;
