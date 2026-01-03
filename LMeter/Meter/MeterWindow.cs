@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Plugin.Services;
+using Dalamud.Utility.Numerics;
 using LMeter.Act;
 using LMeter.Act.DataStructures;
 using LMeter.Config;
@@ -48,7 +49,7 @@ namespace LMeter.Meter
         private ActEvent? _previewEvent = null;
 
         [JsonIgnore]
-        private int _scrollPosition = 0;
+        private int _scrollPosition = 1;
 
         [JsonIgnore]
         private float _scrollShift = 0;
@@ -450,6 +451,8 @@ namespace LMeter.Meter
             return (pos.AddY(headerConfig.HeaderHeight), size.AddY(-headerConfig.HeaderHeight));
         }
 
+        private bool logged = false;
+        
         private void DrawBars(ImDrawListPtr drawList, Vector2 localPos, Vector2 size, ActEvent? actEvent)
         {
             if (actEvent?.Combatants is not null && actEvent.Combatants.Count != 0)
@@ -467,27 +470,55 @@ namespace LMeter.Meter
 
                 float top = sortedCombatants[0].GetValueForDataType(this.GeneralConfig.DataType);
                 int barCount = this.BarConfig.BarCount;
+                int columnCount = 1;
+                int rowCount;
                 float margin = 0;
 
+                Vector2 barSize;
+                
                 if (this.BarConfig.BarSizeType == BarSizeType.ConstantSize)
                 {
                     var barWidth = Math.Min(this.BarConfig.BarWidth, size.X);
-                    var maxColumnCount = Math.Min(this.BarConfig.MaxColumns, (int)Math.Floor(size.X / barWidth));
+                    barSize = new Vector2(barWidth, this.BarConfig.BarHeight);
 
                     if (this.BarConfig.MaxColumns > 1)
                     {
                         barWidth += this.BarConfig.BarHorizontalGaps;
                     }
 
+                    columnCount = Math.Min(this.BarConfig.MaxColumns, (int)Math.Floor(size.X / barWidth));
+                    
                     var barHeight = this.BarConfig.BarHeight + this.BarConfig.BarVerticalGaps;
-                    var maxRowCount = this.BarConfig.MaxRows > 0
+                    rowCount = this.BarConfig.MaxRows > 0
                         ? Math.Min(this.BarConfig.MaxRows, (int)Math.Ceiling(size.Y / barHeight))
                         : (int)Math.Ceiling(size.Y / barHeight);
 
-                    float totalY = maxRowCount * barHeight;
+                    float totalY = rowCount * barHeight;
                     margin = totalY - size.Y - this.BarConfig.BarVerticalGaps;
 
-                    barCount = maxColumnCount * maxRowCount;
+                    barCount = columnCount * rowCount;
+                }
+                else
+                {
+                    columnCount = Math.Min(sortedCombatants.Count, this.BarConfig.MaxColumns);
+                    var totalHorizontalGaps = (columnCount - 1) * this.BarConfig.BarHorizontalGaps;
+                    var barWidth = (size.X - totalHorizontalGaps) / columnCount;
+                    
+                    var effectiveBarCount = Math.Min(barCount, sortedCombatants.Count);
+                    
+                    rowCount = (int)Math.Ceiling((float)effectiveBarCount / columnCount);
+
+                    if (this.BarConfig.MaxRows > 0 && this.BarConfig.MaxRows < rowCount)
+                    {
+                        rowCount = this.BarConfig.MaxRows ;
+                    }
+
+                    var totalVerticalGaps = rowCount * this.BarConfig.BarVerticalGaps;
+                    var barHeight = (int)((size.Y - totalVerticalGaps) / rowCount);
+                    
+                    barSize = new Vector2(barWidth, barHeight);
+
+                    barCount = (int)Math.Min(barCount, rowCount * columnCount);
                 }
 
                 int currentIndex = 0;
@@ -495,8 +526,12 @@ namespace LMeter.Meter
                 if (sortedCombatants.Count > barCount)
                 {
                     int unclampedScroll = _scrollPosition;
-                    currentIndex = Math.Clamp(_scrollPosition, 0, sortedCombatants.Count - barCount);
-                    _scrollPosition = currentIndex;
+
+                    var hiddenRowCount = (int)Math.Ceiling((float)(sortedCombatants.Count - barCount) / columnCount);
+
+                    _scrollPosition = Math.Clamp(_scrollPosition, 0, hiddenRowCount);
+
+                    currentIndex = _scrollPosition * columnCount; 
 
                     if (margin > 0 && _scrollPosition < unclampedScroll)
                     {
@@ -514,6 +549,7 @@ namespace LMeter.Meter
                     }
                 }
 
+                var baseX = localPos.X;
                 localPos = localPos.AddY(-_scrollShift);
                 int maxIndex = Math.Min(currentIndex + barCount, sortedCombatants.Count);
                 int startIndex = currentIndex;
@@ -546,11 +582,13 @@ namespace LMeter.Meter
                     {
                         rounding = this.BarConfig.BottomBarRounding;
                     }
-
+                    
                     localPos = this.DrawBar(
                         drawList,
+                        baseX,
                         localPos,
                         size,
+                        barSize,
                         combatant,
                         jobColor,
                         barColor,
@@ -559,14 +597,17 @@ namespace LMeter.Meter
                         rounding
                     );
                 }
+
+                logged = true;
             }
-            ;
         }
 
         private Vector2 DrawBar(
             ImDrawListPtr drawList,
+            float baseX,
             Vector2 localPos,
             Vector2 size,
+            Vector2 barSize,
             Combatant combatant,
             ConfigColor jobColor,
             ConfigColor barColor,
@@ -576,19 +617,14 @@ namespace LMeter.Meter
         )
         {
             BarConfig barConfig = this.BarConfig;
-            float barHeight =
-                barConfig.BarSizeType == BarSizeType.ConstantCount
-                    ? (size.Y - (barConfig.BarCount - 1) * barConfig.BarVerticalGaps) / barConfig.BarCount
-                    : barConfig.BarHeight;
 
             Vector2 barPos = localPos;
-            Vector2 barSize = new(size.X, barHeight);
-            Vector2 barFillSize = new(size.X * (current / top), barHeight * barConfig.BarFillHeight);
+            Vector2 barFillSize = new(barSize.X * (current / top), barSize.Y * barConfig.BarFillHeight);
 
             if (barConfig.BarFillHeight != 1f)
             {
-                barPos = barConfig.BarFillDirection == 0 ? barPos.AddY(barHeight - barFillSize.Y) : barPos;
-                Vector2 barBackgroundSize = new(size.X * (current / top), barHeight);
+                barPos = barConfig.BarFillDirection == 0 ? barPos.AddY(barSize.Y - barFillSize.Y) : barPos;
+                Vector2 barBackgroundSize = new(barSize.X * (current / top), barSize.Y);
                 drawList.AddRectFilled(localPos, localPos + barBackgroundSize, barConfig.BarBackgroundColor.Base);
             }
 
@@ -604,7 +640,7 @@ namespace LMeter.Meter
             {
                 uint jobIconId = 62000u + (uint)combatant.Job + 100u * (uint)barConfig.JobIconStyle;
                 Vector2 jobIconPos = localPos + barConfig.JobIconOffset;
-                Vector2 jobIconSize = barConfig.JobIconSizeType == 0 ? Vector2.One * barHeight : barConfig.JobIconSize;
+                Vector2 jobIconSize = barConfig.JobIconSizeType == 0 ? Vector2.One * barSize.Y : barConfig.JobIconSize;
                 if (barConfig.JobIconBackgroundColor.Vector.W > 0f)
                 {
                     Vector2 jobIconBackgroundPos = new(jobIconPos.X, localPos.Y);
@@ -620,7 +656,27 @@ namespace LMeter.Meter
             }
 
             DrawBarTexts(drawList, this.BarTextConfig.Texts, localPos, barSize, jobColor, combatant);
-            return localPos.AddY(barHeight + barConfig.BarVerticalGaps);
+
+            if (!logged) Singletons.Get<IPluginLog>().Info($"Current X = {localPos.X}");
+            if (!logged) Singletons.Get<IPluginLog>().Info($"Current Y = {localPos.Y}");
+            
+            var nextPos = localPos.AddX(barSize.X + barConfig.BarHorizontalGaps);
+           
+            if (!logged) Singletons.Get<IPluginLog>().Info($"Tentative Next X = {nextPos.X}");
+            if (!logged) Singletons.Get<IPluginLog>().Info($"Tentative Next Y = {nextPos.Y}");
+            
+            if (!logged) Singletons.Get<IPluginLog>().Info($"Calculated Right Edge = {Math.Floor(nextPos.X + barSize.X)}");
+            if (!logged) Singletons.Get<IPluginLog>().Info($"Calculated Max Right Edge = {baseX + size.X}");
+
+            // TODO doesn't respect column count with fixed size bars - probably change this to do math based on current row/column rather than adjusting positioning (we did all the math to size things well already)
+            if (Math.Floor(nextPos.X + barSize.X) > baseX + size.X)
+            {
+                nextPos = localPos.AddY(barSize.Y + barConfig.BarVerticalGaps).WithX(baseX);
+                if (!logged) Singletons.Get<IPluginLog>().Info($"Adjusted Next X = {nextPos.X}");
+                if (!logged) Singletons.Get<IPluginLog>().Info($"Adjusted Next Y = {nextPos.Y}");
+            }
+            
+            return nextPos;
         }
 
         private static void DrawBarTexts<T>(
