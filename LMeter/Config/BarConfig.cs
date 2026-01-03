@@ -128,7 +128,6 @@ namespace LMeter.Config
                 }
                 else if (this.BarSizeType == BarSizeType.ConstantSize)
                 {
-                    // TODO can we do stretch along one dimension instead? i.e. contant height, fit width
                     ImGui.DragFloat("Bar Height", ref this.BarHeight, .1f, 1, 100);
                     ImGui.DragFloat("Bar Width", ref this.BarWidth, .1f, 1, 1000);
                 }
