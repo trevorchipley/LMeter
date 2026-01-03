@@ -452,6 +452,70 @@ namespace LMeter.Meter
             return (pos.AddY(headerConfig.HeaderHeight), size.AddY(-headerConfig.HeaderHeight));
         }
 
+        private class BarLayout
+        {
+            public int bars;
+            
+            public int rows;
+            public int columns;
+
+            public Vector2 barSize;
+
+            public float margin = 0;
+        }
+
+        private BarLayout CalculateBarLayout(Vector2 size, int combatantCount)
+        {
+            BarLayout layout = new();
+
+            if (this.BarConfig.BarSizeType == BarSizeType.ConstantSize)
+            {
+                var barWidth = Math.Min(this.BarConfig.BarWidth, size.X);
+                layout.barSize = new Vector2(barWidth, this.BarConfig.BarHeight);
+
+                if (this.BarConfig.MaxColumns > 1)
+                {
+                    barWidth += this.BarConfig.BarHorizontalGaps;
+                }
+
+                layout.columns = Math.Min(this.BarConfig.MaxColumns, (int)Math.Floor(size.X / barWidth));
+
+                var barHeight = this.BarConfig.BarHeight + this.BarConfig.BarVerticalGaps;
+                layout.rows = this.BarConfig.MaxRows > 0
+                    ? Math.Min(this.BarConfig.MaxRows, (int)Math.Ceiling(size.Y / barHeight))
+                    : (int)Math.Ceiling(size.Y / barHeight);
+
+                float totalY = layout.rows * barHeight;
+                layout.margin = totalY - size.Y - this.BarConfig.BarVerticalGaps;
+
+                layout.bars = layout.columns * layout.rows;
+            }
+            else
+            {
+                layout.columns = Math.Min(combatantCount, this.BarConfig.MaxColumns);
+                var totalHorizontalGaps = (layout.columns - 1) * this.BarConfig.BarHorizontalGaps;
+                var barWidth = (size.X - totalHorizontalGaps) / layout.columns;
+
+                var effectiveBarCount = Math.Min(this.BarConfig.BarCount, combatantCount);
+
+                layout.rows = (int)Math.Ceiling((float)effectiveBarCount / layout.columns);
+
+                if (this.BarConfig.MaxRows > 0 && this.BarConfig.MaxRows < layout.rows)
+                {
+                    layout.rows = this.BarConfig.MaxRows;
+                }
+
+                var totalVerticalGaps = layout.rows * this.BarConfig.BarVerticalGaps;
+                var barHeight = (int)((size.Y - totalVerticalGaps) / layout.rows);
+
+                layout.barSize = new Vector2(barWidth, barHeight);
+
+                layout.bars = (int)Math.Min(this.BarConfig.BarCount, layout.rows * layout.columns);
+            }
+
+            return layout;
+        }
+        
         private bool logged = false;
         
         private void DrawBars(ImDrawListPtr drawList, Vector2 localPos, Vector2 size, ActEvent? actEvent)
@@ -470,73 +534,24 @@ namespace LMeter.Meter
                 }
 
                 float top = sortedCombatants[0].GetValueForDataType(this.GeneralConfig.DataType);
-                int barCount = this.BarConfig.BarCount;
-                int columnCount = 1;
-                int rowCount;
-                float margin = 0;
 
-                Vector2 barSize;
-                
-                if (this.BarConfig.BarSizeType == BarSizeType.ConstantSize)
-                {
-                    var barWidth = Math.Min(this.BarConfig.BarWidth, size.X);
-                    barSize = new Vector2(barWidth, this.BarConfig.BarHeight);
-
-                    if (this.BarConfig.MaxColumns > 1)
-                    {
-                        barWidth += this.BarConfig.BarHorizontalGaps;
-                    }
-
-                    columnCount = Math.Min(this.BarConfig.MaxColumns, (int)Math.Floor(size.X / barWidth));
-                    
-                    var barHeight = this.BarConfig.BarHeight + this.BarConfig.BarVerticalGaps;
-                    rowCount = this.BarConfig.MaxRows > 0
-                        ? Math.Min(this.BarConfig.MaxRows, (int)Math.Ceiling(size.Y / barHeight))
-                        : (int)Math.Ceiling(size.Y / barHeight);
-
-                    float totalY = rowCount * barHeight;
-                    margin = totalY - size.Y - this.BarConfig.BarVerticalGaps;
-
-                    barCount = columnCount * rowCount;
-                }
-                else
-                {
-                    columnCount = Math.Min(sortedCombatants.Count, this.BarConfig.MaxColumns);
-                    var totalHorizontalGaps = (columnCount - 1) * this.BarConfig.BarHorizontalGaps;
-                    var barWidth = (size.X - totalHorizontalGaps) / columnCount;
-                    
-                    var effectiveBarCount = Math.Min(barCount, sortedCombatants.Count);
-                    
-                    rowCount = (int)Math.Ceiling((float)effectiveBarCount / columnCount);
-
-                    if (this.BarConfig.MaxRows > 0 && this.BarConfig.MaxRows < rowCount)
-                    {
-                        rowCount = this.BarConfig.MaxRows ;
-                    }
-
-                    var totalVerticalGaps = rowCount * this.BarConfig.BarVerticalGaps;
-                    var barHeight = (int)((size.Y - totalVerticalGaps) / rowCount);
-                    
-                    barSize = new Vector2(barWidth, barHeight);
-
-                    barCount = (int)Math.Min(barCount, rowCount * columnCount);
-                }
+                var layout = CalculateBarLayout(size, sortedCombatants.Count);
 
                 int currentIndex = 0;
                 string playerName = Singletons.Get<IPlayerState>().CharacterName ?? "YOU";
-                if (sortedCombatants.Count > barCount)
+                if (sortedCombatants.Count > layout.bars)
                 {
                     int unclampedScroll = _scrollPosition;
 
-                    var hiddenRowCount = (int)Math.Ceiling((float)(sortedCombatants.Count - barCount) / columnCount);
+                    var hiddenRowCount = (int)Math.Ceiling((float)(sortedCombatants.Count - layout.bars) / layout.columns);
 
                     _scrollPosition = Math.Clamp(_scrollPosition, 0, hiddenRowCount);
 
-                    currentIndex = _scrollPosition * columnCount; 
+                    currentIndex = _scrollPosition * layout.columns; 
 
-                    if (margin > 0 && _scrollPosition < unclampedScroll)
+                    if (layout.margin > 0 && _scrollPosition < unclampedScroll)
                     {
-                        _scrollShift = margin;
+                        _scrollShift = layout.margin;
                     }
 
                     if (unclampedScroll < 0)
@@ -551,12 +566,12 @@ namespace LMeter.Meter
                 }
 
                 localPos = localPos.AddY(-_scrollShift);
-                int maxIndex = Math.Min(currentIndex + barCount, sortedCombatants.Count);
+                int maxIndex = Math.Min(currentIndex + layout.bars, sortedCombatants.Count);
                 int startIndex = currentIndex;
 
-                for (int currentRow = 0; currentRow < rowCount && currentIndex < maxIndex; ++currentRow)
+                for (int currentRow = 0; currentRow < layout.rows && currentIndex < maxIndex; ++currentRow)
                 {
-                    for (int currentColumn = 0; currentColumn < columnCount && currentIndex < maxIndex; ++currentColumn, ++currentIndex)
+                    for (int currentColumn = 0; currentColumn < layout.columns && currentIndex < maxIndex; ++currentColumn, ++currentIndex)
                     {
                         Combatant combatant = sortedCombatants[currentIndex];
                         float current = combatant.GetValueForDataType(this.GeneralConfig.DataType);
@@ -588,14 +603,14 @@ namespace LMeter.Meter
                         }
 
                         var barPos = new Vector2(
-                            localPos.X + currentColumn * (barSize.X + this.BarConfig.BarHorizontalGaps),
-                            localPos.Y + currentRow * (barSize.Y + this.BarConfig.BarVerticalGaps)
+                            localPos.X + currentColumn * (layout.barSize.X + this.BarConfig.BarHorizontalGaps),
+                            localPos.Y + currentRow * (layout.barSize.Y + this.BarConfig.BarVerticalGaps)
                         );
                         
                         this.DrawBar(
                             drawList,
                             barPos,
-                            barSize,
+                            layout.barSize,
                             combatant,
                             jobColor,
                             barColor,
