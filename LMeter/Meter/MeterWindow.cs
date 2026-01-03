@@ -475,7 +475,7 @@ namespace LMeter.Meter
         private class BarLayout
         {
             public int bars;
-            
+
             public int rows;
             public int columns;
 
