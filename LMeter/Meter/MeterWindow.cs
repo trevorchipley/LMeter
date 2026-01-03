@@ -49,7 +49,7 @@ namespace LMeter.Meter
         private ActEvent? _previewEvent = null;
 
         [JsonIgnore]
-        private int _scrollPosition = 1;
+        private int _scrollPosition = 0;
 
         [JsonIgnore]
         private float _scrollShift = 0;
