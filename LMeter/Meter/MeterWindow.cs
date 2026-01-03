@@ -4,7 +4,6 @@ using System.Linq;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Plugin.Services;
-using Dalamud.Utility.Numerics;
 using LMeter.Act;
 using LMeter.Act.DataStructures;
 using LMeter.Config;
