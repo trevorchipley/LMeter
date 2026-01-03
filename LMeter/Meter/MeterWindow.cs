@@ -326,7 +326,7 @@ namespace LMeter.Meter
                         {
                             size = size.AddY(-this.BarConfig.ColumnHeaderHeight);
                         }
-                        
+
                         layout = CalculateBarLayout(size, this.GetSortedCombatants(actEvent, this.GeneralConfig.DataType).Count);
                     }
 
@@ -337,9 +337,9 @@ namespace LMeter.Meter
                         for (int i = 0; i < layout.columns; i++)
                         {
                             List<Text> columnHeaderTexts = GetColumnHeaderTexts(this.BarTextConfig.Texts, this.BarConfig);
-                            
+
                             var headerPos = localPos.AddX(i * (layout.barSize.X + this.BarConfig.BarHorizontalGaps));
-                            
+
                             drawList.AddRectFilled(
                                 headerPos,
                                 headerPos + columnHeaderSize,
@@ -542,9 +542,9 @@ namespace LMeter.Meter
 
             return layout;
         }
-        
+
         private bool logged = false;
-        
+
         private void DrawBars(ImDrawListPtr drawList, Vector2 localPos, BarLayout layout, ActEvent actEvent)
         {
             // We don't want to corrupt the cache. The entire logic past this point mutates the sorted Act combatants instead of using a rendering cache
