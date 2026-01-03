@@ -543,8 +543,6 @@ namespace LMeter.Meter
             return layout;
         }
 
-        private bool logged = false;
-
         private void DrawBars(ImDrawListPtr drawList, Vector2 localPos, BarLayout layout, ActEvent actEvent)
         {
             // We don't want to corrupt the cache. The entire logic past this point mutates the sorted Act combatants instead of using a rendering cache
@@ -643,8 +641,6 @@ namespace LMeter.Meter
                     );
                 }
             }
-
-            logged = true;
         }
 
         private void DrawBar(
