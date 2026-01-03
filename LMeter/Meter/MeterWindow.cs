@@ -576,7 +576,7 @@ namespace LMeter.Meter
                             _ => combatant.NameOverwrite,
                         };
 
-                        // TODO evaluate this rounding - should it be row == 0? Something else?
+                        // TODO evaluate this rounding - needs tweaking for grids
                         RoundingOptions rounding = this.BarConfig.MiddleBarRounding;
                         if (currentRow == startIndex)
                         {
