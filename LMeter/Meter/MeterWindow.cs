@@ -319,6 +319,7 @@ namespace LMeter.Meter
                         this.GeneralConfig.Rounding
                     );
 
+                    // TODO update this for grid layout
                     if (this.BarConfig.ShowColumnHeader && actEvent is not null)
                     {
                         List<Text> columnHeaderTexts = GetColumnHeaderTexts(this.BarTextConfig.Texts, this.BarConfig);
