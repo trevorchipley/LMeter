@@ -614,7 +614,7 @@ namespace LMeter.Meter
 
                     // TODO evaluate this rounding - needs tweaking for grids
                     RoundingOptions rounding = this.BarConfig.MiddleBarRounding;
-                    if (currentRow == startIndex)
+                    if (currentIndex == startIndex)
                     {
                         rounding = this.BarConfig.TopBarRounding;
                     }
