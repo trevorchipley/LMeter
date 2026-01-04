@@ -612,13 +612,12 @@ namespace LMeter.Meter
                         _ => combatant.NameOverwrite,
                     };
 
-                    // TODO evaluate this rounding - needs tweaking for grids
                     RoundingOptions rounding = this.BarConfig.MiddleBarRounding;
-                    if (currentIndex == startIndex)
+                    if (currentRow == 0)
                     {
                         rounding = this.BarConfig.TopBarRounding;
                     }
-                    else if (currentIndex == maxIndex - 1)
+                    else if (currentRow == layout.rows - 1)
                     {
                         rounding = this.BarConfig.BottomBarRounding;
                     }
