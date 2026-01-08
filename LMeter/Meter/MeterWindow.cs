@@ -643,75 +643,25 @@ namespace LMeter.Meter
 
             if (layout.columns == 1)
             {
-                if (top)
-                {
-                    return this.BarConfig.TopBarRounding;
-                }
-
-                if (bottom)
-                {
-                    return this.BarConfig.BottomBarRounding;
-                }
-
-                return this.BarConfig.MiddleBarRounding;
+                return top ? this.BarConfig.TopBarRounding : bottom ? this.BarConfig.BottomBarRounding : this.BarConfig.MiddleBarRounding;
             }
 
             if (layout.rows == 1)
             {
-                if (left)
-                {
-                    return this.BarConfig.LeftBarRounding;
-                }
-
-                if (right)
-                {
-                    return this.BarConfig.RightBarRounding;
-                }
-
-                return this.BarConfig.MiddleBarRounding;
+                return left ? this.BarConfig.LeftBarRounding : right ? this.BarConfig.RightBarRounding : this.BarConfig.MiddleBarRounding;
             }
 
             if (top)
             {
-                if (left)
-                {
-                    return this.BarConfig.TopLeftBarRounding;
-                }
-
-                if (right)
-                {
-                    return this.BarConfig.TopRightBarRounding;
-                }
-
-                return this.BarConfig.TopBarRounding;
+                return left ? this.BarConfig.TopLeftBarRounding : right ? this.BarConfig.TopRightBarRounding : this.BarConfig.TopBarRounding;
             }
 
             if (bottom)
             {
-                if (left)
-                {
-                    return this.BarConfig.BottomLeftBarRounding;
-                }
-
-                if (right)
-                {
-                    return this.BarConfig.BottomRightBarRounding;
-                }
-
-                return this.BarConfig.BottomBarRounding;
+                return left ? this.BarConfig.BottomLeftBarRounding : right ? this.BarConfig.BottomRightBarRounding : this.BarConfig.BottomBarRounding;
             }
 
-            if (left)
-            {
-                return this.BarConfig.LeftBarRounding;
-            }
-
-            if (right)
-            {
-                return this.BarConfig.RightBarRounding;
-            }
-
-            return this.BarConfig.MiddleBarRounding;
+            return left ? this.BarConfig.LeftBarRounding : right ? this.BarConfig.RightBarRounding : this.BarConfig.MiddleBarRounding;
         }
 
         private void DrawBar(
