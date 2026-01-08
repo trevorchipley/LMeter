@@ -612,15 +612,7 @@ namespace LMeter.Meter
                         _ => combatant.NameOverwrite,
                     };
 
-                    RoundingOptions rounding = this.BarConfig.MiddleBarRounding;
-                    if (currentRow == 0)
-                    {
-                        rounding = this.BarConfig.TopBarRounding;
-                    }
-                    else if (currentRow == layout.rows - 1)
-                    {
-                        rounding = this.BarConfig.BottomBarRounding;
-                    }
+                    var rounding = GetRounding(layout, currentRow, currentColumn);
 
                     var barPos = new Vector2(
                         localPos.X + currentColumn * (layout.barSize.X + this.BarConfig.BarHorizontalGaps),
@@ -640,6 +632,86 @@ namespace LMeter.Meter
                     );
                 }
             }
+        }
+
+        private RoundingOptions GetRounding(BarLayout layout, int row, int column)
+        {
+            var top = row == 0;
+            var bottom = row == layout.rows - 1;
+            var left = column == 0;
+            var right = column == layout.columns - 1;
+
+            if (layout.columns == 1)
+            {
+                if (top)
+                {
+                    return this.BarConfig.TopBarRounding;
+                }
+
+                if (bottom)
+                {
+                    return this.BarConfig.BottomBarRounding;
+                }
+
+                return this.BarConfig.MiddleBarRounding;
+            }
+
+            if (layout.rows == 1)
+            {
+                if (left)
+                {
+                    return this.BarConfig.LeftBarRounding;
+                }
+
+                if (right)
+                {
+                    return this.BarConfig.RightBarRounding;
+                }
+
+                return this.BarConfig.MiddleBarRounding;
+            }
+
+            if (top)
+            {
+                if (left)
+                {
+                    return this.BarConfig.TopLeftBarRounding;
+                }
+
+                if (right)
+                {
+                    return this.BarConfig.TopRightBarRounding;
+                }
+
+                return this.BarConfig.TopBarRounding;
+            }
+
+            if (bottom)
+            {
+                if (left)
+                {
+                    return this.BarConfig.BottomLeftBarRounding;
+                }
+
+                if (right)
+                {
+                    return this.BarConfig.BottomRightBarRounding;
+                }
+
+                return this.BarConfig.BottomBarRounding;
+            }
+
+            if (left)
+            {
+                return this.BarConfig.LeftBarRounding;
+            }
+
+            if (right)
+            {
+                return this.BarConfig.RightBarRounding;
+            }
+
+            return this.BarConfig.MiddleBarRounding;
         }
 
         private void DrawBar(

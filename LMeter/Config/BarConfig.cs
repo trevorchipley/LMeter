@@ -96,6 +96,14 @@ namespace LMeter.Config
         public RoundingOptions MiddleBarRounding = new(false, 10f, RoundingFlag.All);
         public RoundingOptions BottomBarRounding = new(false, 10f, RoundingFlag.BottomLeft);
 
+        public RoundingOptions LeftBarRounding = new(false, 10f, RoundingFlag.Left);
+        public RoundingOptions RightBarRounding = new(false, 10f, RoundingFlag.Right);
+
+        public RoundingOptions TopLeftBarRounding = new(false, 10f, RoundingFlag.TopLeft);
+        public RoundingOptions TopRightBarRounding = new(false, 10f, RoundingFlag.TopRight);
+        public RoundingOptions BottomLeftBarRounding = new(false, 10f, RoundingFlag.BottomLeft);
+        public RoundingOptions BottomRightBarRounding = new(false, 10f, RoundingFlag.BottomRight);
+
         public IConfigPage GetDefault()
         {
             BarConfig defaultConfig = new()
@@ -236,9 +244,31 @@ namespace LMeter.Config
                 }
 
                 ImGui.NewLine();
-                DrawHelpers.DrawRoundingOptions("Top Bar Rounded Corners", 0, this.TopBarRounding);
-                DrawHelpers.DrawRoundingOptions("Middle Bar Rounded Corners", 0, this.MiddleBarRounding);
-                DrawHelpers.DrawRoundingOptions("Bottom Bar Rounded Corners", 0, this.BottomBarRounding);
+
+                if (MaxColumns == 1)
+                {
+                    DrawHelpers.DrawRoundingOptions("Top Bar Rounded Corners", 0, this.TopBarRounding);
+                    DrawHelpers.DrawRoundingOptions("Middle Bar Rounded Corners", 0, this.MiddleBarRounding);
+                    DrawHelpers.DrawRoundingOptions("Bottom Bar Rounded Corners", 0, this.BottomBarRounding);
+                }
+                else if (MaxRows == 1)
+                {
+                    DrawHelpers.DrawRoundingOptions("Left Bar Rounded Corners", depth: 0, this.LeftBarRounding);
+                    DrawHelpers.DrawRoundingOptions("Middle Bar Rounded Corners", depth: 0, this.MiddleBarRounding);
+                    DrawHelpers.DrawRoundingOptions("Right Bar Rounded Corners", depth: 0, this.RightBarRounding);
+                }
+                else
+                {
+                    DrawHelpers.DrawRoundingOptions("Top Left Bar Rounded Corners", 0, this.TopLeftBarRounding);
+                    DrawHelpers.DrawRoundingOptions("Top Middle Bar Rounded Corners", 0, this.TopBarRounding);
+                    DrawHelpers.DrawRoundingOptions("Top Right Bar Rounded Corners", 0, this.TopRightBarRounding);
+                    DrawHelpers.DrawRoundingOptions("Middle Left Bar Rounded Corners", 0, this.LeftBarRounding);
+                    DrawHelpers.DrawRoundingOptions("Middle Middle Bar Rounded Corners", 0, this.MiddleBarRounding);
+                    DrawHelpers.DrawRoundingOptions("Middle Right Bar Rounded Corners", 0, this.RightBarRounding);
+                    DrawHelpers.DrawRoundingOptions("Bottom Left Bar Rounded Corners", 0, this.BottomLeftBarRounding);
+                    DrawHelpers.DrawRoundingOptions("Bottom Middle Bar Rounded Corners", 0, this.BottomBarRounding);
+                    DrawHelpers.DrawRoundingOptions("Bottom Right Bar Rounded Corners", 0, this.BottomRightBarRounding);
+                }
             }
 
             ImGui.EndChild();
