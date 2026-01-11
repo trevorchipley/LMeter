@@ -20,8 +20,8 @@ namespace LMeter.Config
         [Obsolete($"Use {nameof(BarVerticalGaps)} instead, retained for serialization backwards compatibility")]
         public int BarGaps
         {
-            get => BarHorizontalGaps;
-            set => BarHorizontalGaps = value;
+            get => BarVerticalGaps;
+            set => BarVerticalGaps = value;
         }
 
         public int BarVerticalGaps = 1;
