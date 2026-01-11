@@ -534,7 +534,7 @@ namespace LMeter.Meter
 
                 layout.BarSize = new Vector2(barWidth, barHeight);
 
-                layout.Bars = (int)Math.Min(this.BarConfig.BarCount, layout.Rows * layout.Columns);
+                layout.Bars = Math.Min(this.BarConfig.BarCount, layout.Rows * layout.Columns);
             }
 
             return layout;
@@ -590,7 +590,6 @@ namespace LMeter.Meter
 
             localPos = localPos.AddY(-_scrollShift);
             int maxIndex = Math.Min(currentIndex + layout.Bars, sortedCombatants.Count);
-            int startIndex = currentIndex;
 
             for (int currentRow = 0; currentRow < layout.Rows && currentIndex < maxIndex; ++currentRow)
             {
