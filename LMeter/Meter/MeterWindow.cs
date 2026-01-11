@@ -363,12 +363,9 @@ namespace LMeter.Meter
                         localPos = localPos.AddY(columnHeaderSize.Y);
                     }
 
-                    if (actEvent?.Combatants is not null && actEvent.Combatants.Count != 0 && layout is not null)
-                    {
-                        ImGui.PushClipRect(localPos, localPos + size, false);
-                        this.DrawBars(drawList, localPos, layout, actEvent);
-                        ImGui.PopClipRect();
-                    }
+                    ImGui.PushClipRect(localPos, localPos + size, false);
+                    this.DrawBars(drawList, localPos, layout, actEvent);
+                    ImGui.PopClipRect();
 
                     if (this.HeaderConfig.ShowFooter)
                     {
@@ -543,8 +540,13 @@ namespace LMeter.Meter
             return layout;
         }
 
-        private void DrawBars(ImDrawListPtr drawList, Vector2 localPos, BarLayout layout, ActEvent actEvent)
+        private void DrawBars(ImDrawListPtr drawList, Vector2 localPos, BarLayout? layout, ActEvent? actEvent)
         {
+            if (actEvent?.Combatants is null || actEvent.Combatants.Count == 0 || layout is null)
+            {
+                return;
+            }
+
             // We don't want to corrupt the cache. The entire logic past this point mutates the sorted Act combatants instead of using a rendering cache
             // This has the issue that some settings can't behave properly and or don't update till the following combat update/fight
             List<Combatant> sortedCombatants = [.. this.GetSortedCombatants(actEvent, this.GeneralConfig.DataType)];
