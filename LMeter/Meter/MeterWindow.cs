@@ -320,6 +320,11 @@ namespace LMeter.Meter
 
                     BarLayout? layout = null;
 
+                    if (this.HeaderConfig.ShowFooter)
+                    {
+                        size = size.AddY(-this.HeaderConfig.FooterHeight);
+                    }
+
                     if (actEvent is not null)
                     {
                         if (this.BarConfig.ShowColumnHeader)
@@ -356,11 +361,6 @@ namespace LMeter.Meter
                         }
 
                         localPos = localPos.AddY(columnHeaderSize.Y);
-                    }
-
-                    if (this.HeaderConfig.ShowFooter)
-                    {
-                        size = size.AddY(-this.HeaderConfig.FooterHeight);
                     }
 
                     if (actEvent?.Combatants is not null && actEvent.Combatants.Count != 0 && layout is not null)
