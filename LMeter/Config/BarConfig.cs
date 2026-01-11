@@ -27,7 +27,7 @@ namespace LMeter.Config
         public int BarVerticalGaps = 1;
         public int BarHorizontalGaps = 1;
         public float BarHeight = 25;
-        public float BarWidth = 1;
+        public float BarWidth = 150;
         public int MaxRows = 0;
         public int MaxColumns = 1;
 
